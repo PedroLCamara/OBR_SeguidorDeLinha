@@ -1,5 +1,5 @@
 //Cor de acordo com iluminação
-int DTBranco = 12;
+int DTBranco = 14;
 
 //Motores
 int MotorRodaDireitaNeg = 10;
@@ -55,9 +55,6 @@ void AndarParaTras() {
 }
 
 void VirarEsquerda() {
-  digitalWrite(MotorRodaDireitaNeg, LOW);
-  digitalWrite(MotorRodaEsquerdaNeg, HIGH);
-  digitalWrite(MotorRodaDireitaPos, LOW);
   digitalWrite(MotorRodaEsquerdaPos, LOW);
 }
 
@@ -219,9 +216,10 @@ void loop() {
         pretoEsquerda = true;
       }
       else{
-        int contadoraGiro = 0;
+        AndarParaFrente();
+        delay(500);
         VirarEsquerda();
-        delay(2000);
+        delay(1000);
          do{
           detectarCor();
           VirarEsquerda();
@@ -242,16 +240,21 @@ void loop() {
         AndarParaFrente();
         pretoDireita = true;
       } else{
+        AndarParaFrente();
+        delay(500);
+        VirarDireita();
+        delay(1000);
          do{
           detectarCor();
           VirarDireita();
         }while(S2Bran < DTBranco);
-        pretoDireita = false;
+        pretoEsquerda = false;
       }
     }
   }
   if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
     verdeEsquerda = false;
+    verdeDireita = false;
     if(pretoDireita){
       do{
         detectarCor();
@@ -264,14 +267,14 @@ void loop() {
         detectarCor();
         VirarEsquerda();
       }while(S2Bran < DTBranco);
-      pretoDireita = false;
+      pretoEsquerda = false;
     }
     else {
       AndarParaFrente();
     }
   }
   if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran >= DTBranco){
-    do{
+      do{
         detectarCor();
         VirarDireita();
       }while(S2Bran < DTBranco);
