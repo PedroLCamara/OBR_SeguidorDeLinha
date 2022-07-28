@@ -1,5 +1,5 @@
 // Cor de acordo com iluminação
-int DTBranco =  12;
+int DTBranco =  100;
 
 // Motores
 int MotorRodaDireitaNeg = 10;
@@ -7,8 +7,8 @@ int MotorRodaDireitaPos = 11;
 int MotorRodaEsquerdaNeg = 12;
 int MotorRodaEsquerdaPos = 13;
 
-int PotenciaMotorDireita = A0;
-int PotenciaMotorEsquerda = A1;
+int EnDireita = A0;
+int EnEsquerda = A1;
 
 // Sensor cor 1
 int S1pinS0 = 53;
@@ -160,14 +160,14 @@ void setup()
   pinMode(S3pinOut, INPUT);
 
   Serial.begin(9600);
-  digitalWrite(S1pinS0, HIGH);
-  digitalWrite(S1pinS1, LOW);
-  digitalWrite(S2pinS0, HIGH);
-  digitalWrite(S2pinS1, LOW);
-  digitalWrite(S3pinS0, HIGH);
-  digitalWrite(S3pinS1, LOW);
-  analogWrite(PotenciaMotorEsquerda, 130);
-  analogWrite(PotenciaMotorDireita, 130);
+  digitalWrite(S1pinS0, LOW);
+  digitalWrite(S1pinS1, HIGH);
+  digitalWrite(S2pinS0, LOW);
+  digitalWrite(S2pinS1, HIGH);
+  digitalWrite(S3pinS0, LOW);
+  digitalWrite(S3pinS1, HIGH);
+  analogWrite(EnDireita, 130);
+  analogWrite(EnEsquerda, 130);
 }
 
 bool pretoDireita = false;
@@ -187,6 +187,7 @@ void loop() {
   Serial.print(S1Azul);
   Serial.print(" S1Branco: ");
   Serial.print(S1Bran);
+  Serial.println();
   Serial.print("; S2Vermelho: ");
   Serial.print(S2Verm);
   Serial.print(" S2Verde: ");
@@ -195,6 +196,7 @@ void loop() {
   Serial.print(S2Azul);
   Serial.print(" S2Branco: ");
   Serial.print(S2Bran);
+  Serial.println();
   Serial.print("; S3Vermelho: ");
   Serial.print(S3Verm);
   Serial.print(" S3Verde: ");
@@ -204,7 +206,11 @@ void loop() {
   Serial.print(" S3Branco: ");
   Serial.print(S3Bran);
   Serial.println();
+  Serial.println();
+
   if(S2Bran >= DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
+    Serial.print("CAMINHO A FRENTE");
+    Serial.println();
      AndarParaFrente();
      pretoDireita = false;
      pretoEsquerda = false;
@@ -212,145 +218,185 @@ void loop() {
      verdeEsquerda = false;
   } 
   else if(S2Bran >= DTBranco && S1Bran >= DTBranco && S3Bran >= DTBranco){
+    Serial.print("CAMINHOS MULTIPLOS");
+    Serial.println();
     if(S1Verm > S1Verd){
       verdeEsquerda = true;
+    } else if(verdeEsquerda && !verdeDireita){
+        AndarParaFrente();
+        delay(400);
+        do{
+          detectarCor();
+          VirarEsquerda();
+        }while(S2Bran >= DTBranco);
+        do{
+          detectarCor();
+          VirarEsquerda();
+        }while(S2Bran < DTBranco);
+        pretoEsquerda = false;
+        pretoDireita = false;
+        verdeEsquerda = false;
+        AndarParaTras();
+        delay(250);
+        AndarParaFrente();
+    } else{
+      pretoEsquerda = true;
+      AndarParaFrente();    
     }
     if(S3Verm > S3Verd){
       verdeDireita = true;
-    }
-    if(verdeEsquerda && verdeDireita){
-      Parar(); //Temporário, tem que fazer voltar
-    } else if(verdeDireita){
-      AndarParaFrente();
-        delay(500);
-        VirarDireita();
-        delay(1000);
+    } else if(!verdeEsquerda && verdeDireita){
+        AndarParaFrente();
+        delay(400);
+        do{
+          detectarCor();
+          VirarDireita();
+        }while(S2Bran >= DTBranco);
          do{
           detectarCor();
           VirarDireita();
         }while(S2Bran < DTBranco);
         pretoEsquerda = false;
-    } else if(verdeEsquerda){
-      AndarParaFrente();
-        delay(500);
-        VirarEsquerda();
-        delay(1000);
-         do{
-          detectarCor();
-          VirarEsquerda();
-        }while(S2Bran < DTBranco);
         pretoDireita = false;
+        verdeDireita = true;
+        AndarParaTras();
+        delay(250);
+        AndarParaFrente();
+    } else{
+      pretoDireita = true;
+      AndarParaFrente();   
+    }
+
+    if(S3Verm < S3Verd && S1Verm < S1Verd && verdeDireita && verdeEsquerda){
+      //Voltar  
     }
   }
   else if(S2Bran >= DTBranco && S1Bran >= DTBranco && S3Bran < DTBranco){
+    Serial.print("CAMINHO A FRENTE E ESQUERDA");
+    Serial.println();
     verdeDireita = false;
     pretoDireita = false;
     if(S1Verm > S1Verd){
+        verdeEsquerda = true;
+    }
+    else{
+      if(!verdeEsquerda){
+        do{
+          detectarCor();
+          VirarEsquerda();
+        }while(S1Bran >= DTBranco);
         AndarParaFrente();
-        delay(500);
-        VirarEsquerda();
-        delay(1000);
+        pretoEsquerda = true;
+      } else{
+        AndarParaFrente();
+        delay(400);
+        do{
+          detectarCor();
+          VirarEsquerda();
+        }while(S2Bran >= DTBranco);
          do{
           detectarCor();
           VirarEsquerda();
         }while(S2Bran < DTBranco);
         pretoEsquerda = false;
-        pretoDireita = false;
-    }
-    else{
+        verdeEsquerda = false;
+        AndarParaTras();
+        delay(250);
         AndarParaFrente();
-        pretoEsquerda = true;
+      }
     }
   } 
   else if(S2Bran >= DTBranco && S1Bran < DTBranco && S3Bran >= DTBranco){
+    Serial.print("CAMINHO A FRENTE E DIREITA");
+    Serial.println();
     verdeEsquerda = false;
     pretoEsquerda = false;
     if(S3Verm > S3Verd){
+        verdeDireita = true;
+    }
+    else{
+      if(!verdeDireita){
+        do{
+          detectarCor();
+          VirarDireita();
+        }while(S3Bran >= DTBranco);
+        pretoDireita = true;
         AndarParaFrente();
-        delay(500);
-        VirarDireita();
-        delay(1000);
+      } else{
+        AndarParaFrente();
+        delay(400);
+        do{
+          detectarCor();
+          VirarDireita();
+        }while(S2Bran >= DTBranco);
          do{
           detectarCor();
           VirarDireita();
         }while(S2Bran < DTBranco);
-        pretoEsquerda = false;
         pretoDireita = false;
-    }
-    else{
-      pretoDireita = true;
-      AndarParaFrente();
-    }
-  }
-  else if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
-    verdeEsquerda = false;
-    verdeDireita = false;
-    if(pretoDireita){
-      do{
-        detectarCor();
-        VirarDireita();
-      }while(S2Bran < DTBranco);
-      pretoEsquerda = false;
-      pretoDireita = false;
-    }
-    else if(pretoEsquerda){
-      do{
-        detectarCor();
-        VirarEsquerda();
-      }while(S2Bran < DTBranco);
-      pretoEsquerda = false;
-      pretoDireita = false;
-    }
-    else {
-      AndarParaFrente();
-      delay(3000);
-      detectarCor();
-      if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
+        verdeDireita = false;
         AndarParaTras();
-        delay(3000);
-        VirarDireita();
-        delay(500);
+        delay(250);
         AndarParaFrente();
-        delay(3000);
-        detectarCor();
-        if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
-          VirarEsquerda();
-          delay(500);
-          AndarParaTras();
-          delay(3000);
-          VirarEsquerda();
-          delay(500);
-          AndarParaFrente();
-          delay(3000);
-          detectarCor();
-          if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
-            VirarDireita();
-            delay(500);
-            AndarParaTras();
-            delay(3000);
-            do{
-              AndarParaFrente();
-              detectarCor();
-            }while(S2Bran < DTBranco);
-          }
-        }
       }
     }
   }
+  else if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
+    Serial.print("CAMINHO N/A");
+    Serial.println();
+    verdeEsquerda = false;
+    verdeDireita = false;
+    if(pretoDireita && !pretoEsquerda){
+      do{
+        detectarCor();
+        VirarDireita();
+      }while(S2Bran < DTBranco);
+      pretoEsquerda = false;
+      pretoDireita = false;
+    }
+    else if(pretoEsquerda && !pretoDireita){
+      do{
+        detectarCor();
+        VirarEsquerda();
+      }while(S2Bran < DTBranco);
+      pretoEsquerda = false;
+      pretoDireita = false;
+      AndarParaTras();
+      delay(250);
+      AndarParaFrente();
+    }
+    else {
+      AndarParaFrente();
+    }
+  }
   else if(S2Bran < DTBranco && S1Bran < DTBranco && S3Bran >= DTBranco){
+    verdeEsquerda = false;
+    verdeDireita = false;
+    Serial.print("CAMINHO A DIREITA");
+    Serial.println();
       do{
         detectarCor();
         VirarDireita();
       }while(S2Bran < DTBranco);
       pretoDireita = false;
       pretoEsquerda = false;
+      AndarParaTras();
+      delay(250);
+      AndarParaFrente();
   }
   if(S2Bran < DTBranco && S1Bran >= DTBranco && S3Bran < DTBranco){
-    do{
+    verdeEsquerda = false;
+    verdeDireita = false;
+    Serial.print("CAMINHO A ESQUERDA");
+    Serial.println();
+      do{
         detectarCor();
         VirarEsquerda();
       }while(S2Bran < DTBranco);
       pretoEsquerda = false;
       pretoDireita = false;
+      AndarParaTras();
+      delay(250);
+      AndarParaFrente();
   }
 }
