@@ -1,5 +1,14 @@
+#include <NewPing.h>
+#define TRIGGER_PIN 6
+#define ECHO_PIN 7
+#define MAX_DISTANCE 200
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
 // Cor de acordo com iluminação
 int DTBranco =  100;
+
+// Distancia de acordo com a leitura do sensor
+int DTDist = 3;
 
 // Motores
 int MotorRodaDireitaNeg = 10;
@@ -60,6 +69,9 @@ void AndarParaTras()
 
 void VirarEsquerda()
 {
+    digitalWrite(MotorRodaDireitaNeg, LOW);
+  digitalWrite(MotorRodaEsquerdaNeg, HIGH);
+  digitalWrite(MotorRodaDireitaPos, HIGH);
   digitalWrite(MotorRodaEsquerdaPos, LOW);
 }
 
@@ -68,7 +80,7 @@ void VirarDireita()
   digitalWrite(MotorRodaDireitaNeg, HIGH);
   digitalWrite(MotorRodaEsquerdaNeg, LOW);
   digitalWrite(MotorRodaDireitaPos, LOW);
-  digitalWrite(MotorRodaEsquerdaPos, LOW);
+  digitalWrite(MotorRodaEsquerdaPos, HIGH);
 }
 
 void Parar()
@@ -207,8 +219,28 @@ void loop() {
   Serial.print(S3Bran);
   Serial.println();
   Serial.println();
-
-  if(S2Bran >= DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
+  Serial.print("Distancia");
+  Serial.print(sonar.ping_cm());
+  Serial.print("cm");
+  Serial.println();
+  Serial.println();
+  if(sonar.ping_cm() <= DTDist && sonar.ping_cm() != 0){
+    VirarEsquerda();
+    delay(1500);
+    AndarParaFrente();
+    delay(2500);
+    VirarDireita();
+    delay(1500);
+    AndarParaFrente();
+    delay(4500);
+    VirarDireita();
+    delay(1500);
+    AndarParaFrente();
+    delay(2500);
+    VirarEsquerda();
+    delay(1500);
+  }
+  else if(S2Bran >= DTBranco && S1Bran < DTBranco && S3Bran < DTBranco){
     Serial.print("CAMINHO A FRENTE");
     Serial.println();
      AndarParaFrente();
@@ -224,7 +256,7 @@ void loop() {
       verdeEsquerda = true;
     } else if(verdeEsquerda && !verdeDireita){
         AndarParaFrente();
-        delay(400);
+        delay(450);
         do{
           detectarCor();
           VirarEsquerda();
@@ -237,7 +269,7 @@ void loop() {
         pretoDireita = false;
         verdeEsquerda = false;
         AndarParaTras();
-        delay(250);
+        delay(300);
         AndarParaFrente();
     } else{
       pretoEsquerda = true;
@@ -247,7 +279,7 @@ void loop() {
       verdeDireita = true;
     } else if(!verdeEsquerda && verdeDireita){
         AndarParaFrente();
-        delay(400);
+        delay(450);
         do{
           detectarCor();
           VirarDireita();
@@ -260,7 +292,7 @@ void loop() {
         pretoDireita = false;
         verdeDireita = true;
         AndarParaTras();
-        delay(250);
+        delay(300);
         AndarParaFrente();
     } else{
       pretoDireita = true;
@@ -268,7 +300,16 @@ void loop() {
     }
 
     if(S3Verm < S3Verd && S1Verm < S1Verd && verdeDireita && verdeEsquerda){
-      //Voltar  
+      AndarParaTras();
+      delay(1000);
+      do{
+        detectarCor();
+        VirarDireita();
+      }while(S2Bran >= DTBranco);
+      do{
+        detectarCor();
+        VirarDireita();
+      }while(S2Bran < DTBranco);
     }
   }
   else if(S2Bran >= DTBranco && S1Bran >= DTBranco && S3Bran < DTBranco){
@@ -289,7 +330,7 @@ void loop() {
         pretoEsquerda = true;
       } else{
         AndarParaFrente();
-        delay(400);
+        delay(450);
         do{
           detectarCor();
           VirarEsquerda();
@@ -301,7 +342,7 @@ void loop() {
         pretoEsquerda = false;
         verdeEsquerda = false;
         AndarParaTras();
-        delay(250);
+        delay(300);
         AndarParaFrente();
       }
     }
@@ -324,7 +365,7 @@ void loop() {
         AndarParaFrente();
       } else{
         AndarParaFrente();
-        delay(400);
+        delay(450);
         do{
           detectarCor();
           VirarDireita();
@@ -336,7 +377,7 @@ void loop() {
         pretoDireita = false;
         verdeDireita = false;
         AndarParaTras();
-        delay(250);
+        delay(300);
         AndarParaFrente();
       }
     }
@@ -362,7 +403,7 @@ void loop() {
       pretoEsquerda = false;
       pretoDireita = false;
       AndarParaTras();
-      delay(250);
+      delay(300);
       AndarParaFrente();
     }
     else {
@@ -381,7 +422,7 @@ void loop() {
       pretoDireita = false;
       pretoEsquerda = false;
       AndarParaTras();
-      delay(250);
+      delay(300);
       AndarParaFrente();
   }
   if(S2Bran < DTBranco && S1Bran >= DTBranco && S3Bran < DTBranco){
@@ -396,7 +437,7 @@ void loop() {
       pretoEsquerda = false;
       pretoDireita = false;
       AndarParaTras();
-      delay(250);
+      delay(300);
       AndarParaFrente();
   }
 }
